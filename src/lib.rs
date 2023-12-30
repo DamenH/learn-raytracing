@@ -1,54 +1,31 @@
 use glam::Vec2;
-use image::{ImageBuffer, Rgb, RgbImage};
+use image::{ImageBuffer, Rgba, RgbaImage};
 
-mod utils;
+pub mod utils;
 
-const IMAGE_WIDTH: u32 = 800;
-const IMAGE_HEIGHT: u32 = 600;
+pub struct Renderer;
 
-struct Circle {
-    r: f32,
-}
+impl Renderer {
+	pub fn render(width: u32, height: u32) -> RgbaImage {
+		let img = ImageBuffer::from_fn(
+			width as u32,
+			height as u32,
+			|x, y| {
+				let frag_coord =
+					Vec2::new(x as f32 / width as f32, y as f32 / height as f32);
+				let color = Renderer::per_pixel(frag_coord);
+				return Rgba([(color >> 16) as u8, (color >> 8) as u8, (color) as u8, 255]);
+			},
+		);
+	
+		return img;
+	}
 
-struct Ray {
-    origin: Vec2,
-    direction: Vec2,
-}
+	fn per_pixel(coord: Vec2) -> u32 {
+		let r = coord.x * 255.;
+		let g = coord.y * 255.;
+		let b = 0.;
 
-pub fn render() -> RgbImage {
-    let mut img = ImageBuffer::new(IMAGE_WIDTH, IMAGE_WIDTH);
-
-    let circle = Circle { r: 150. };
-    let offset_x = (IMAGE_WIDTH / 2) as i32;
-    let offset_y = (IMAGE_HEIGHT / 2) as i32 + (circle.r / 2.) as i32;
-
-    let ray = Ray {
-        origin: Vec2::new(-offset_x as f32, -500.),
-        direction: Vec2::new(0., 1.),
-    };
-
-    for ray_offset in 0..IMAGE_WIDTH {
-        let ray_x = ray.origin.x + ray_offset as f32;
-
-        let a = ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y;
-        let b = 2. * (ray.direction.x * ray_x + ray.direction.y * ray.origin.y);
-        let c = ray_x * ray_x + ray.origin.y * ray.origin.y - circle.r * circle.r;
-
-        let descriminant = b * b - 4. * a * c;
-        if descriminant < 0. {
-            continue; // No intersection
-        }
-
-        let t = (-b + descriminant.sqrt()) / (2. * a);
-        let x = (ray_x + ray.direction.x * t) as i32 + offset_x;
-        let y = (ray.origin.y + ray.direction.y * t) as i32 + offset_y;
-        img.put_pixel(x as u32, y as u32, Rgb([255, 255, 255]));
-
-		let t = (-b - descriminant.sqrt()) / (2. * a);
-        let x = (ray_x + ray.direction.x * t) as i32 + offset_x;
-        let y = (ray.origin.y + ray.direction.y * t) as i32 + offset_y;
-        img.put_pixel(x as u32, y as u32, Rgb([255, 255, 255]));
-    }
-
-    return img;
+		return (r as u32) << 16 | (g as u32) << 8 | (b as u32);
+	}
 }
