@@ -1,12 +1,14 @@
 use glam::{Vec2, Vec3, Vec4};
 use image::{ImageBuffer, Rgba, RgbaImage};
 
-pub mod utils;
+use self::scene::Scene;
+
+pub mod scene;
 
 pub struct Renderer;
 
 impl Renderer {
-    pub fn render(width: u32, height: u32) -> RgbaImage {
+    pub fn render(width: u32, height: u32, scene: Scene) -> RgbaImage {
         let img = ImageBuffer::from_fn(width as u32, height as u32, |x, y| {
             let frag_coord = Vec2::new(x as f32 / width as f32, y as f32 / height as f32) * 2. - 1.;
             let color = Renderer::per_pixel(frag_coord);
@@ -50,6 +52,16 @@ impl Renderer {
         if discriminant < 0. {
             return Vec4::new(0., 0., 0., 0.);
         }
+
+		let t0 = -b - discriminant.sqrt() / (2. * a);
+		let t1 = -b + discriminant.sqrt() / (2. * a);
+
+		let hit_position_0 = ray_origin + ray_direction * t0;
+		let hit_position_1 = ray_origin + ray_direction * t1;
+
+		let hit_normal_0 = (hit_position_0 - Vec3::new(0., 0., 0.)).normalize();
+
+
 
         return Vec4::new(1., 0., 0., 1.);
     }

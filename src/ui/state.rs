@@ -1,13 +1,16 @@
 use std::iter;
-use wgpu::{util::DeviceExt};
+use wgpu::util::DeviceExt;
 use winit::{event::WindowEvent, window::Window};
-
-use crate::Renderer;
 
 use super::{
     texture,
     vertex::{Vertex, CLIP_INDICES, CLIP_VERTICES},
 };
+
+use crate::renderer::Renderer;
+use crate::renderer::scene::Scene;
+
+
 
 pub struct State {
     surface: wgpu::Surface,
@@ -25,7 +28,7 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(window: Window) -> Self {
+    pub async fn new(window: Window, scene: Scene) -> Self {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -78,9 +81,13 @@ impl State {
         };
         surface.configure(&device, &config);
 
-        let diffuse_texture =
-            texture::Texture::from_image(&device, &queue, &Renderer::render(500, 500), None)
-                .unwrap();
+        let diffuse_texture = texture::Texture::from_image(
+            &device,
+            &queue,
+            &Renderer::render(window.inner_size().width, window.inner_size().height, scene),
+            None,
+        )
+        .unwrap();
 
         let texture_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
