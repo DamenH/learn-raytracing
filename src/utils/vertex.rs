@@ -30,19 +30,19 @@ impl Vertex {
 pub const CLIP_VERTICES: &[Vertex] = &[
     Vertex {
         position: [0.999, 0.999, 0.0],
-        tex_coords: [1., 0.],
+        tex_coords: [1., 1.],
     }, // A
     Vertex {
         position: [-0.999, 0.999, 0.0],
-        tex_coords: [0., 0.],
+        tex_coords: [0., 1.],
     }, // B
     Vertex {
         position: [-0.999, -0.999, 0.0],
-        tex_coords: [0., 1.],
+        tex_coords: [0., 0.],
     }, // C
     Vertex {
         position: [0.999, -0.999, 0.0],
-        tex_coords: [1., 1.],
+        tex_coords: [1., 0.],
     }, // D
 ];
 pub const CLIP_INDICES: &[u16] = &[0, 1, 2, 0, 2, 3];

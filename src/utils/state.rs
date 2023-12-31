@@ -1,5 +1,5 @@
 use std::iter;
-use wgpu::util::DeviceExt;
+use wgpu::{util::DeviceExt};
 use winit::{event::WindowEvent, window::Window};
 
 use crate::Renderer;
@@ -79,7 +79,7 @@ impl State {
         surface.configure(&device, &config);
 
         let diffuse_texture =
-            texture::Texture::from_image(&device, &queue, &Renderer::render(800, 600), None)
+            texture::Texture::from_image(&device, &queue, &Renderer::render(500, 500), None)
                 .unwrap();
 
         let texture_bind_group_layout =
@@ -240,12 +240,7 @@ impl State {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
                         store: wgpu::StoreOp::Store,
                     },
                 })],

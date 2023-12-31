@@ -9,7 +9,14 @@ use learn_raytracing::utils::state::State;
 #[async_std::main]
 async fn main() {
     let event_loop = EventLoop::new();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
+    let window = WindowBuilder::new()
+        .with_title("Ray Tracing")
+		.with_inner_size(winit::dpi::LogicalSize::new(500, 500))
+		.with_resizable(false)
+		.with_decorations(false)
+		.with_transparent(true)
+        .build(&event_loop)
+        .unwrap();
     let mut state = State::new(window).await;
 
     event_loop.run(move |event, _, control_flow| match event {
