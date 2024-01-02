@@ -66,4 +66,32 @@ impl Texture {
             sampler,
         })
     }
+
+	pub fn update_from_image(
+		&self,
+		queue: &wgpu::Queue,
+		img: &image::RgbaImage,
+	) {
+		let dimensions = img.dimensions();
+
+		queue.write_texture(
+			wgpu::ImageCopyTexture {
+				aspect: wgpu::TextureAspect::All,
+				texture: &self.texture,
+				mip_level: 0,
+				origin: wgpu::Origin3d::ZERO,
+			},
+			&img,
+			wgpu::ImageDataLayout {
+				offset: 0,
+				bytes_per_row: Some(4 * dimensions.0),
+				rows_per_image: Some(dimensions.1),
+			},
+			wgpu::Extent3d {
+				width: dimensions.0,
+				height: dimensions.1,
+				depth_or_array_layers: 1,
+			},
+		);
+	}
 }

@@ -1,11 +1,13 @@
 use glam::{Vec3, Vec4};
 
+#[derive(Clone)]
 pub struct Scene {
     pub camera: Camera,
     pub spheres: Vec<Sphere>,
     pub lights: Vec<Light>,
 }
 
+#[derive(Clone)]
 pub struct Camera {
     pub position: Vec3,
     pub rotation: Vec3,
@@ -28,6 +30,7 @@ impl Default for Camera {
 	}
 }
 
+#[derive(Clone)]
 pub struct Sphere {
     pub position: Vec3,
     pub radius: f32,
@@ -44,6 +47,7 @@ impl Default for Sphere {
 	}
 }
 
+#[derive(Clone)]
 pub struct Light {
     pub position: Vec3,
     pub color: Vec4,

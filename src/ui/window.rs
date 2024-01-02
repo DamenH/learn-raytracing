@@ -1,24 +1,26 @@
+use image::RgbaImage;
 use winit::{
     event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
 
-use crate::renderer::scene::Scene;
-
 use super::state::State;
 
-pub async fn draw_window(scene: Scene) {
+
+
+pub async fn draw_window<'a, F>(width: u32, height: u32, render: F) 
+where F: FnMut(u32, u32, u32) -> RgbaImage + 'static, {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Ray Tracing")
-        .with_inner_size(winit::dpi::LogicalSize::new(500, 500))
+        .with_inner_size(winit::dpi::LogicalSize::new(width, height))
         .with_resizable(false)
-        .with_decorations(false)
-        .with_transparent(true)
+        .with_decorations(true)
+        .with_transparent(false)
         .build(&event_loop)
         .unwrap();
-    let mut state = State::new(window, scene).await;
+    let mut state = State::new(window, render).await;
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent {

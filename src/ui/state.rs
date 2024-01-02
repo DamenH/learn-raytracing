@@ -1,3 +1,4 @@
+use image::RgbaImage;
 use std::iter;
 use wgpu::util::DeviceExt;
 use winit::{event::WindowEvent, window::Window};
@@ -6,11 +7,6 @@ use super::{
     texture,
     vertex::{Vertex, CLIP_INDICES, CLIP_VERTICES},
 };
-
-use crate::renderer::Renderer;
-use crate::renderer::scene::Scene;
-
-
 
 pub struct State {
     surface: wgpu::Surface,
@@ -24,11 +20,16 @@ pub struct State {
     num_indices: u32,
     diffuse_bind_group: wgpu::BindGroup,
     diffuse_texture: texture::Texture,
+    render_handler: Box<dyn FnMut(u32, u32, u32) -> RgbaImage>,
+    frame: u32,
     window: Window,
 }
 
 impl State {
-    pub async fn new(window: Window, scene: Scene) -> Self {
+    pub async fn new<F>(window: Window, mut render: F) -> Self
+    where
+        F: FnMut(u32, u32, u32) -> RgbaImage + 'static,
+    {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -84,7 +85,7 @@ impl State {
         let diffuse_texture = texture::Texture::from_image(
             &device,
             &queue,
-            &Renderer::render(window.inner_size().width, window.inner_size().height, scene),
+            &render(window.inner_size().width, window.inner_size().height, 0),
             None,
         )
         .unwrap();
@@ -203,6 +204,8 @@ impl State {
             diffuse_bind_group,
             diffuse_texture,
             window,
+            frame: 0,
+            render_handler: Box::new(render),
         }
     }
 
@@ -225,7 +228,8 @@ impl State {
     }
 
     pub fn update(&mut self) {
-        let _ = self.render();
+        self.frame += 1;
+        self.render().unwrap();
     }
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
@@ -255,6 +259,11 @@ impl State {
                 occlusion_query_set: None,
                 timestamp_writes: None,
             });
+
+            let new_frame =
+                self.render_handler.as_mut()(self.size.width, self.size.height, self.frame);
+
+			self.diffuse_texture.update_from_image(&self.queue, &new_frame);
 
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
