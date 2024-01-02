@@ -1,6 +1,6 @@
 use self::scene::Scene;
 use glam::{Vec2, Vec3, Vec4};
-use image::{ImageBuffer, Rgba, RgbaImage};
+use image::{ImageBuffer, RgbaImage};
 use rayon::prelude::*;
 
 pub mod scene;
@@ -18,31 +18,25 @@ impl Renderer {
 
     pub fn render(&mut self, width: u32, height: u32, frame: u32) -> RgbaImage {
         self.frame = frame;
-
         println!("Frame: {}", frame);
 
-        let img: Vec<_> = (0..width * height)
-            .into_par_iter()
-            .map(move |index| {
-                let frag_x = (index % width) as f32 / width as f32;
-                let frag_y = (index / width) as f32 / height as f32;
+        let mut buffer = vec![0u8; (width * height * 4) as usize];
+
+        buffer
+            .par_chunks_mut(4)
+            .enumerate()
+            .for_each(|(index, slice)| {
+                let frag_x = (index as u32 % width) as f32 / width as f32;
+                let frag_y = (index as u32 / width) as f32 / height as f32;
                 let frag_coord = Vec2::new(frag_x, frag_y) * 2. - 1.;
                 let color = self.per_pixel(frag_coord);
-                Rgba([
-                    (color.x * 255.99) as u8,
-                    (color.y * 255.99) as u8,
-                    (color.z * 255.99) as u8,
-                    (color.w * 255.99) as u8,
-                ])
-            })
-            .collect();
+                slice[0] = (color.x * 255.99) as u8;
+                slice[1] = (color.y * 255.99) as u8;
+                slice[2] = (color.z * 255.99) as u8;
+                slice[3] = (color.w * 255.99) as u8;
+            });
 
-        let img = ImageBuffer::from_fn(width as u32, height as u32, |x, y| {
-            let pixel = img[(y * width + x) as usize];
-            pixel.clone()
-        });
-
-        return img;
+        ImageBuffer::from_vec(width, height, buffer).unwrap()
     }
 
     // TODO: Aspect Ratio, Camera View Matrix Projection
@@ -81,14 +75,14 @@ impl Renderer {
             return Vec4::new(0., 0., 0., 0.);
         }
 
-        let t0 = -b - discriminant.sqrt() / (2. * a);
-        let t1 = -b + discriminant.sqrt() / (2. * a);
+        // let t0 = -b - discriminant.sqrt() / (2. * a);
+        // let t1 = -b + discriminant.sqrt() / (2. * a);
 
         // let hit_position_0 = ray_origin + ray_direction * t0;
         // let hit_position_1 = ray_origin + ray_direction * t1;
 
         // let hit_normal_0 = (hit_position_0 - Vec3::new(0., 0., 0.)).normalize();
 
-        return Vec4::new(1., 0., 0., 1.);
+        Vec4::new(1., 0., 0., 1.)
     }
 }

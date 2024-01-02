@@ -1,5 +1,4 @@
 use anyhow::*;
-use image::GenericImageView;
 
 pub struct Texture {
     pub texture: wgpu::Texture,
@@ -40,7 +39,7 @@ impl Texture {
                 mip_level: 0,
                 origin: wgpu::Origin3d::ZERO,
             },
-            &img,
+            img,
             wgpu::ImageDataLayout {
                 offset: 0,
                 bytes_per_row: Some(4 * dimensions.0),
@@ -81,7 +80,7 @@ impl Texture {
 				mip_level: 0,
 				origin: wgpu::Origin3d::ZERO,
 			},
-			&img,
+			img,
 			wgpu::ImageDataLayout {
 				offset: 0,
 				bytes_per_row: Some(4 * dimensions.0),
