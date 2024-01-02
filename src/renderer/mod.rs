@@ -18,16 +18,18 @@ impl Renderer {
 
     pub fn render(&mut self, width: u32, height: u32, frame: u32) -> RgbaImage {
         self.frame = frame;
-        println!("Frame: {}", frame);
 
         let mut buffer = vec![0u8; (width * height * 4) as usize];
 
+        let width_f32 = width as f32;
+        let height_f32 = height as f32;
+
         buffer
-            .par_chunks_mut(4)
+            .par_chunks_exact_mut(4)
             .enumerate()
             .for_each(|(index, slice)| {
-                let frag_x = (index as u32 % width) as f32 / width as f32;
-                let frag_y = (index as u32 / width) as f32 / height as f32;
+                let frag_x = (index as u32 % width) as f32 / width_f32;
+                let frag_y = (index as u32 / width) as f32 / height_f32;
                 let frag_coord = Vec2::new(frag_x, frag_y) * 2. - 1.;
                 let color = self.per_pixel(frag_coord);
                 slice[0] = (color.x * 255.99) as u8;
@@ -51,7 +53,7 @@ impl Renderer {
         let ray_origin = self.scene.camera.position;
         let ray_direction = (self.scene.camera.rotation
             + Vec3::new(coord.x, coord.y, -1.)
-            + Vec3::new(0., (self.frame as f32) * 0.01, 0.))
+            + Vec3::new(0., (self.frame as f32) * 0.001, 0.))
         .normalize();
 
         let sphere = &self.scene.spheres[0];

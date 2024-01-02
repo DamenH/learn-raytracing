@@ -23,6 +23,8 @@ pub struct State {
     render_handler: Box<dyn FnMut(u32, u32, u32) -> RgbaImage>,
     frame: u32,
     window: Window,
+	last_frame_timestamp: std::time::Instant,
+	running_average: [f32; 32],
 }
 
 impl State {
@@ -206,6 +208,8 @@ impl State {
             window,
             frame: 0,
             render_handler: Box::new(render),
+			last_frame_timestamp: std::time::Instant::now(),
+			running_average: [1.0; 32],
         }
     }
 
@@ -229,6 +233,10 @@ impl State {
 
     pub fn update(&mut self) {
         self.frame += 1;
+		self.running_average[self.frame as usize % 32] = self.last_frame_timestamp.elapsed().as_secs_f32();
+		let fps = 1.0 / (self.running_average.iter().sum::<f32>() / 32.0);
+		self.window.set_title(&format!("FPS: {}", fps as u32));
+		self.last_frame_timestamp = std::time::Instant::now();
         self.render().unwrap();
     }
 
