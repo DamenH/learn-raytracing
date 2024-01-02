@@ -1,7 +1,7 @@
+use self::scene::Scene;
 use glam::{Vec2, Vec3, Vec4};
 use image::{ImageBuffer, Rgba, RgbaImage};
-
-use self::scene::Scene;
+use rayon::prelude::*;
 
 pub mod scene;
 
@@ -21,15 +21,25 @@ impl Renderer {
 
         println!("Frame: {}", frame);
 
+        let img: Vec<_> = (0..width * height)
+            .into_par_iter()
+            .map(move |index| {
+                let frag_x = (index % width) as f32 / width as f32;
+                let frag_y = (index / width) as f32 / height as f32;
+                let frag_coord = Vec2::new(frag_x, frag_y) * 2. - 1.;
+                let color = self.per_pixel(frag_coord);
+                Rgba([
+                    (color.x * 255.99) as u8,
+                    (color.y * 255.99) as u8,
+                    (color.z * 255.99) as u8,
+                    (color.w * 255.99) as u8,
+                ])
+            })
+            .collect();
+
         let img = ImageBuffer::from_fn(width as u32, height as u32, |x, y| {
-            let frag_coord = Vec2::new(x as f32 / width as f32, y as f32 / height as f32) * 2. - 1.;
-            let color = self.per_pixel(frag_coord);
-            return Rgba([
-                (color.x * 255.99) as u8,
-                (color.y * 255.99) as u8,
-                (color.z * 255.99) as u8,
-                (color.w * 255.99) as u8,
-            ]);
+            let pixel = img[(y * width + x) as usize];
+            pixel.clone()
         });
 
         return img;
@@ -47,7 +57,7 @@ impl Renderer {
         let ray_origin = self.scene.camera.position;
         let ray_direction = (self.scene.camera.rotation
             + Vec3::new(coord.x, coord.y, -1.)
-            + Vec3::new(0.,(self.frame as f32) * 0.01, 0.))
+            + Vec3::new(0., (self.frame as f32) * 0.01, 0.))
         .normalize();
 
         let sphere = &self.scene.spheres[0];

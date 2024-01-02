@@ -13,6 +13,7 @@ image = { version = "0.24.3", default-features = false, features = ["png", "jpeg
 rand = "0.8.5"
 wgpu = "0.18.0"
 winit = "0.28"
+rayon = "1.8.0"
 
 [dependencies.async-std]
 version = "1.7.0"
